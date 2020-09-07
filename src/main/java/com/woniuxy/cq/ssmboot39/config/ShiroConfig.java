@@ -65,7 +65,8 @@ public class ShiroConfig {
         //登出
         sfcd.addPathDefinition("/logout", "logout");
         //拦截
-        sfcd.addPathDefinition("/**", "user");
+//        sfcd.addPathDefinition("/**", "user");
+        sfcd.addPathDefinition("/**", "anon");
 
         return sfcd;
     }
