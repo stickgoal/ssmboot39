@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>login</title>
+</head>
+<body>
+<div id="app">
+
+    <form action="">
+
+        <div class="form-control"><input type="text" v-model="username"></div>
+        <div class="form-control"><input type="password" v-model="password"></div>
+        <div class="form-control"><input type="button" value="提交" @click="doSubmit"></div>
+
+
+    </form>
+
+
+</div>
+
+<script src="js/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@0.12.0/dist/axios.min.js"></script>
+
+
+<script>
+    var app = new Vue({
+        el:"#app",
+        data:{
+            username:'',
+            password:''
+        },
+        methods:{
+            doSubmit:function(){
+                var formData = new FormData();
+                formData.append("username",this.username);
+                formData.append("password",this.password);
+                axios.post('/login',formData)
+                .then((resp)=>{
+                    if(resp.data.success){
+                        alert("成功！");
+                        window.location="/teacher/list2";
+                    }else{
+                        alert(resp.data.message);
+                    }
+                });
+
+            }
+        }
+    })
+</script>
+
+</body>
+</html>

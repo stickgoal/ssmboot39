@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>讲师管理</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+
+</head>
+
+<body>
+    <div id="app">
+        <!-- 查询条件 -->
+        <el-form :inline="true" :model="searchForm" class="demo-form-inline">
+            <el-form-item >
+                <div class="block">
+                    <span class="demonstration">入职时间</span>
+                    <el-date-picker
+                            v-model="searchForm.entryDate"
+                            type="daterange"
+                            range-separator="至"
+                            start-placeholder="开始日期"
+                            end-placeholder="结束日期"
+                            value-format="yyyy-MM-dd HH:mm:ss"
+                            >
+                    </el-date-picker>
+                </div>
+            </el-form-item>
+            <el-form-item label="阶段">
+                <el-select v-model="searchForm.phrase" placeholder="请选择">
+                    <el-option label="一阶段" value="1"></el-option>
+                    <el-option label="二阶段" value="2"></el-option>
+                    <el-option label="三阶段" value="3"></el-option>
+                    <el-option label="四阶段" value="4"></el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="doSearch">查询</el-button>
+                <el-button type="success" circle icon="el-icon-plus" @click="showAddDialog=true"></el-button>
+            </el-form-item>
+        </el-form>
+        <!-- 数据 -->
+        <el-table :data="tableData" stripe border style="width: 100%">
+
+            <el-table-column prop="teacherId" label="教师ID" width="180">
+            </el-table-column>
+            <el-table-column prop="entryDate" label="入职日期" width="180">
+            </el-table-column>
+            <el-table-column prop="name" label="姓名" width="180">
+            </el-table-column>
+            <el-table-column prop="level" label="等级">
+            </el-table-column>
+            <el-table-column
+                    fixed="right"
+                    label="操作"
+                    width="100">
+            <template slot-scope="scope">
+                <el-button @click="upgrade(scope.row)" type="text" size="small">升级</el-button>
+                <el-button type="text" size="small">编辑</el-button>
+            </template>
+            </el-table-column>
+        </el-table>
+
+        <!-- 分页 -->
+        <el-pagination
+                layout="prev, pager, next" :current-page="curr"
+                :total="totalCount" size="10" @current-change="jump">
+        </el-pagination>
+
+        <!-- 新增 -->
+        <el-dialog
+                title="新增讲师"
+                :visible.sync="showAddDialog"
+                width="30%"
+                >
+            <el-form ref="form" :model="form" label-width="80px">
+                <el-form-item label="讲师姓名">
+                    <el-input v-model="form.name"></el-input>
+                </el-form-item>
+                <el-form-item label="入职时间">
+
+                        <el-date-picker
+                                v-model="form.entryDate"
+                                type="date"
+                                value-format="yyyy-MM-dd HH:mm:ss"
+                        >
+                        </el-date-picker>
+                </el-form-item>
+                <el-form-item label="方向">
+                    <el-select v-model="form.direction" placeholder="请选择方向">
+                        <el-option label="开发" value="dev"></el-option>
+                        <el-option label="测试" value="test"></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="handleAdd">立即创建</el-button>
+                    <el-button>取消</el-button>
+                </el-form-item>
+
+            </el-form>
+
+        </el-dialog>
+
+
+    </div>
+
+    <!-- 引入组件库 -->
+    <script src="js/vue.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@0.12.0/dist/axios.min.js"></script>
+
+    <script>
+        var app = new Vue({
+            el: "#app",
+            data: {
+                form: {
+                    name: '',
+                    direction: '',
+                    entryDate: ''
+                },
+                tableData: [],
+                totalCount:0,
+                showAddDialog:false,
+                curr:1,
+                searchForm:{
+                    entryDate:'',
+                    phrase:''
+                }
+            },
+            methods: {
+                doSearch:function(){
+                    var f = this.searchForm;
+                    var params={phrase:f.phrase,entryDateBefore:f.entryDate[0],entryDateAfter:f.entryDate[1]}
+                    var vm = this;
+                   this.doPageQuery(params);
+                   // this.$alert({  message: '恭喜你，查询成功',
+                   //     type: 'success'})
+                },
+                jump:function(curr){
+                    console.log(curr);
+                    var f = this.searchForm;
+                    var params={phrase:f.phrase,entryDateBefore:f.entryDate[0],entryDateAfter:f.entryDate[1],pageIdx:curr};
+                    //向后端发请求
+                    this.doPageQuery(params);
+                },
+                doPageQuery:function(params){
+                    var vm =this;
+                    axios.get('/elteacher/list',{params:params})
+                        .then(function(resp){
+                            console.log(resp);
+                            if(resp.data.success){
+                                //页面数据
+                                vm.tableData=resp.data.content;
+                                //总条数
+                                vm.totalCount=resp.data.totalCount;
+                                //当前页
+                                vm.curr=resp.data.pageIdx;
+                            }
+                        });
+                },
+                handleAdd:function(){
+
+
+                    const formData = new FormData();
+                    formData.append("level","123");
+                vm =this;
+
+                    //发ajax
+                    axios.post('/teacher/add1',formData)
+                    .then(function(resp){
+                        if(resp.data.success){
+                            vm.showAddDialog=false;
+                            vm.$message("新增成功");
+                        }else{
+                            vm.$alert("新增失败："+resp.data.message);
+                        }
+                    })
+
+
+                },
+                upgrade:function(row){
+                    console.log(row);
+                }
+            },
+            mounted: function () {
+
+                this.doPageQuery({});
+            }
+        })
+    </script>
+</body>
+
+</html>

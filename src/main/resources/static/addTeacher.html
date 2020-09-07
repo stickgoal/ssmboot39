@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue lifecycle</title>
+</head>
+
+<body>
+
+    <div id="app">
+        <form>
+
+            <div class="form-control">
+                <input type="text" name="teacherName" v-model="teacher.name" placeholder="教师名称">
+            </div>
+
+            <div class="form-control">
+                <label >方向</label>
+                <select v-model="teacher.direction">
+                    <option v-for="d in directions" :value="d.value">{{d.name}}</option>
+                </select>
+            </div>
+
+            <div class="form-control">
+                <input type="date" v-model="teacher.entryDate"  placeholder="入职时间">
+            </div>
+            
+            <div class="form-control">
+                <input type="button" value="新增" @click="addTeacher">
+            </div>
+
+        </form>
+        
+        
+        
+    </div>
+
+
+    <script src="js/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@0.12.0/dist/axios.min.js"></script>
+
+    <script>
+        var app = new Vue({
+            el: "#app",
+            data: {
+                message: '',
+                directions:[{name:'测试',value:'test'},{name:'Java开发',value:'java'}],
+                teacher:{
+                    name:'',
+                    entryDate:'',
+                    direction:''
+                }
+            },
+            methods: {
+                addTeacher:function () {
+
+                    console.log(typeof this.teacher.entryDate);
+
+                    this.teacher.entryDate = this.teacher.entryDate+" 00:00:00";
+
+                    //发ajax
+                    axios.post('/teacher/add',this.teacher)
+                    .then(function(resp){
+                        if(resp.data.success){
+                            alert("新增成功！");
+                        }
+                    }).catch(function(err){
+                        console.error(err);
+                        alert("新增失败，原因是："+err);
+                    });
+                }
+            },
+            mounted: function () {
+
+
+            }
+        });
+    </script>
+
+</body>
+
+</html>

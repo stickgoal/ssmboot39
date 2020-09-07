@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="layout-head">
+    <meta charset="UTF-8">
+    <title>蜗牛讲堂</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" th:href="@{/app.css}">
+</head>
+<body>
+
+<div id="navbar" th:fragment="layout-navbar">
+
+    <ul>
+        <li><a href="#">首页</a></li>
+        <li><a href="#">讲堂</a></li>
+    </ul>
+
+</div>
+
+<div id="footer" th:fragment="layout-footer">
+    woniuxy.com &reg; 2005-2020 all rights reserved
+</div>
+</body>
+</html>

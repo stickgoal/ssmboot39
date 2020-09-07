@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue lifecycle</title>
+</head>
+
+<body>
+
+<div id="app">
+    <form>
+
+        <div class="form-control">
+            <input type="text" name="teacherName" v-model="teacher.name" placeholder="教师名称">
+        </div>
+
+        <div class="form-control">
+            <label>方向</label>
+            <select v-model="teacher.direction">
+                <option v-for="d in directions" :value="d.value">{{d.name}}</option>
+            </select>
+        </div>
+
+        <div class="form-control">
+            <input type="text" v-model="teacher.entryDate" placeholder="入职时间">
+        </div>
+
+        <div class="form-control">
+            <input type="button" value="修改" @click="modifyTeacher">
+        </div>
+
+    </form>
+
+
+</div>
+
+
+<script src="js/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@0.12.0/dist/axios.min.js"></script>
+
+<script>
+    //axios提供了拦截转换机制，在发送请求前拦截
+    var ax = axios.create({transformRequest:[function (params) {
+        console.log(params)
+        //将json对象转换为form对象，post时解决请求转换问题
+            const formData = new FormData();
+            Object.keys(params).forEach((key) => {
+                formData.append(key, params[key]);
+            });
+            console.log(formData);
+        return formData;
+    }]});
+
+
+    var app = new Vue({
+        el: "#app",
+        data: {
+            message: '',
+            directions: [{name: '测试', value: 'test'}, {name: 'Java开发', value: 'java'}],
+            teacher: {
+                teacherId:-1,
+                name: '',
+                entryDate: '',
+                direction: ''
+            }
+        },
+        methods: {
+            modifyTeacher: function () {
+                console.log(this.teacher);
+
+                //发ajax
+                ax.post('/teacher/modify', this.teacher)
+                    .then(function (resp) {
+                        if (resp.data.success) {
+                            alert("修改成功！");
+                        }
+                    }).catch(function (err) {
+                    console.error(err);
+                    alert("修改失败，原因是：" + err);
+                });
+            }
+        },
+        mounted: function () {
+
+            var vm = this;
+            // .then(resp =>this.teacher=resp.data.data                    );
+
+            axios.get('/teacher/get', {params: {id: 1}})
+                .then(function (resp) {
+                    vm.teacher = resp.data.data
+                });
+
+        }
+
+    })
+    ;
+</script>
+
+</body>
+
+</html>

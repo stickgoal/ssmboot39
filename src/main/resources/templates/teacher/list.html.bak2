@@ -1,0 +1,226 @@
+<!DOCTYPE html >
+<html xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>开始使用layui</title>
+    <!--引入样式-->
+    <link rel="stylesheet" href="/layui/css/layui.css">
+    <style>
+        .layui-header{
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-container">
+    <div class="layui-header">
+
+    <ul class="layui-nav" lay-filter="">
+        <li class="layui-nav-item"><a href="">最新活动</a></li>
+        <li class="layui-nav-item layui-this"><a href="">产品</a></li>
+        <li class="layui-nav-item"><a href="">大数据</a></li>
+        <li class="layui-nav-item">
+            <a href="javascript:;">解决方案</a>
+            <dl class="layui-nav-child"> <!-- 二级菜单 -->
+                <dd><a href="">移动模块</a></dd>
+                <dd><a href="">后台模版</a></dd>
+                <dd><a href="">电商平台</a></dd>
+            </dl>
+        </li>
+        <li class="layui-nav-item"><a href="">社区</a></li>
+    </ul>
+    </div>
+    <!--查询条件-->
+    <form  id="queryForm" class="layui-form" th:action="@{/teacher/list2}">
+        <input type="hidden" name="pageIdx" >
+        <input type="hidden" name="pageSize" value="2">
+        <div class="layui-form-item">
+
+            <div class="layui-inline">
+                <label class="layui-form-label">入职时间</label>
+                <div class="layui-input-inline" style="width: 100px;">
+                    <input type="text" th:value="${#dates.format(entryDateBefore,'yyyy-MM-dd HH:mm:ss')}" name="entryDateBefore" id="entryDateBefore"  autocomplete="off" class="layui-input mydate">
+                </div>
+                <div class="layui-form-mid">-</div>
+                <div class="layui-input-inline" style="width: 100px;">
+                    <input type="text" th:value="${#dates.format(entryDateAfter,'yyyy-MM-dd HH:mm:ss')}" name="entryDateAfter" id="entryDateAfter" autocomplete="off" class="layui-input mydate">
+                </div>
+            </div>
+
+            <div class="layui-inline">
+                <label class="layui-form-label">阶段</label>
+                <div class="layui-input-inline" style="width: 100px;">
+                        <select name="phrase"  lay-verify="required">
+                            <option value=""></option>
+                            <option value="1" th:selected="${phrase=='1'}">一阶段</option>
+                            <option value="2" th:selected="${phrase=='2'}">二阶段</option>
+                            <option value="3" th:selected="${phrase=='3' }">三阶段</option>
+                        </select>
+                </div>
+            </div>
+            <div class="layui-inline">
+                <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+            </div>
+
+        </div>
+
+    </form>
+
+
+
+    <!-- 你的HTML代码 -->
+    <table class="layui-table">
+        <colgroup>
+            <col width="150">
+            <col width="200">
+            <col>
+        </colgroup>
+        <thead>
+        <tr>
+            <th>教师ID</th>
+            <th>方向</th>
+            <th>姓名</th>
+            <th>阶段</th>
+            <th>入职时间</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each=" t : ${teacherIpage.records}">
+            <td th:text="${t.teacherId}">贤心</td>
+            <td th:text="${t.direction}">贤心</td>
+            <td th:text="${t.name}">贤心</td>
+            <td th:text="${t.phrase}">贤心</td>
+            <td th:text="${#dates.format(t.entryDate,'yyyy-MM-dd HH:mm:ss')}">贤心</td>
+            <td>
+                <a class="layui-btn layui-btn-danger"
+                   th:href="@{'/teacher/delete?id='+${t.teacherId}}">删除</a>
+                <a class="layui-btn layui-btn-normal upgrade" th:attr="teacher_id=${t.teacherId},teacher_name=${t.name},level=${t.level}">升级</a>
+            </td>
+        </tr>
+
+        </tbody>
+    </table>
+
+    <!--分页导航条 ① 分页导航条容器 -->
+    <div id="page_nav"></div>
+</div>
+
+<div id="upgrade_modial" style="display: none">
+
+    <form class="layui-form" id="upgradeForm">
+        <input type="hidden" name="teacherId">
+        <div class="layui-form-item">
+
+            <div class="layui-inline">
+                <label class="layui-form-label">讲师名称</label>
+                <span id="teacherName"></span>
+            </div>
+
+            <div class="layui-inline">
+                <label class="layui-form-label">级别</label>
+                <div class="layui-input-inline" style="width: 100px;">
+                    <select name="level"  lay-verify="required">
+                        <option value=""></option>
+                        <option value="1" >初级</option>
+                        <option value="2" >中级</option>
+                        <option value="3" >高级</option>
+                        <option value="4" >特级</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-inline">
+                <button class="layui-btn" id="upgrade-btn" lay-filter="formDemo">升级</button>
+            </div>
+
+        </div>
+
+
+    </form>
+    
+
+
+
+</div>
+
+<!--引入js-->
+<script src="/layui/layui.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script th:inline="javascript">/*② Thymeleaf的 th:inline 属性，将后端数据直接在script中取到*/
+//一般直接写在一个js文件中
+layui.use(['layer', 'form', 'laypage','element','laydate'], function () { //③导入 layui的laypage组件
+    var layer = layui.layer
+        , form = layui.form
+        , laypage = layui.laypage
+        , element = layui.element
+        , laydate = layui.laydate
+    ;
+
+    //执行一个laypage实例
+    laypage.render({
+        elem: 'page_nav' //注意，存放分页导航容器的id
+        , count: [[${teacherIpage.total}]] //从后台数据中取出数据总数，从服务端得到
+        , limit: [[${teacherIpage.size}]] //从后台数据中取出每页多少条
+        , curr : [[${teacherIpage.current}]] //从后台数据中取出当前页码
+        , jump: function (obj, first) {//点击分页时，跳转的函数
+           
+            if (!first) {//非首次进入时跳转
+                console.log(obj)
+                $("[name=pageIdx]").val(obj.curr);
+                $("#queryForm").submit();
+            }
+
+        }
+    });
+
+    //执行一个laydate实例
+    laydate.render({
+        elem: '#entryDateBefore'//指定元素
+        ,format: 'yyyy-MM-dd HH:mm:ss'
+    });
+    //执行一个laydate实例
+    laydate.render({
+        elem: '#entryDateAfter' //指定元素
+        ,format: 'yyyy-MM-dd HH:mm:ss'
+    });
+
+    $('.upgrade').click(function(){
+       var id = $(this).attr("teacher_id")
+       $("[name=teacherId]").val(id);
+       $("#teacherName").text($(this).attr("teacher_name"));
+
+       $("#upgrade-btn").click(function (e) {
+            e.preventDefault();
+            $.ajax({
+               url:'/teacher/upgrade',
+               type:'post',
+               dataType:'json',
+               data:$("#upgradeForm").serialize(),
+               success:function(resp){
+                    console.log(resp);
+                    if(resp.success){
+                        layer.msg("升级成功！");
+                        layer.close(layerIdx);
+                    }
+               }
+            });
+
+
+            return false;
+       })
+
+       var layerIdx = layer.open(
+           {
+               type: 1,
+               area: ['500px', '300px'],
+               content: $("#upgrade_modial") //这里content是一个普通的String
+           }
+       )
+
+    });
+
+});
+</script>
+</body>
+</html>

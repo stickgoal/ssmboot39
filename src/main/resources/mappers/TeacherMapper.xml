@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woniuxy.cq.ssmboot39.dao.TeacherMapper">
+
+    <sql id="pageQueryCondition">
+        <where>
+            <if test="phrase !=null and phrase!='' ">
+                phrase = #{phrase}
+            </if>
+            <if test="entryDateBefore !=null">
+                and  entry_date &gt; #{entryDateBefore}
+            </if>
+            <if test="entryDateAfter !=null">
+                and entry_date &lt; #{entryDateAfter}
+            </if>
+        </where>
+    </sql>
+
+    <select id="countTeacher" resultType="long">
+        select count(*) from woniu_teacher
+        <include refid="pageQueryCondition"></include>
+    </select>
+
+    <select id="pageQueryTeacher" resultType="teacher">
+        select * from woniu_teacher
+        <include refid="pageQueryCondition"></include>
+        limit #{pageStart},#{pageSize}
+    </select>
+
+    <select id="pageQueryTeacher2" resultType="teacher">
+        select * from woniu_teacher
+        <include refid="pageQueryCondition"></include>
+    </select>
+
+
+</mapper>
